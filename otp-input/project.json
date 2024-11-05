@@ -1,0 +1,81 @@
+{
+  "name": "otp-input",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "otp-input/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "test": {
+      "executor": "@angular-devkit/build-angular:karma",
+      "options": {
+        "polyfills": [],
+        "karmaConfig": "{projectRoot}/karma.conf.js",
+        "tsConfig": "{projectRoot}/tsconfig.spec.json",
+        "inlineStyleLanguage": "scss"
+      }
+    },
+    "build": {
+      "executor": "@angular-devkit/build-angular:ng-packagr",
+      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "options": {
+        "project": "{projectRoot}/ng-package.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "{projectRoot}/tsconfig.lib.json"
+        },
+        "development": {
+          "tsConfig": "{projectRoot}/tsconfig.lib.json"
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "storybook": {
+      "executor": "@storybook/angular:start-storybook",
+      "options": {
+        "port": 4400,
+        "configDir": "otp-input/.storybook",
+        "browserTarget": "otp-input:build-storybook",
+        "compodoc": false
+      },
+      "configurations": {
+        "ci": {
+          "quiet": true
+        }
+      }
+    },
+    "build-storybook": {
+      "executor": "@storybook/angular:build-storybook",
+      "outputs": ["{options.outputDir}"],
+      "options": {
+        "outputDir": "dist/storybook/otp-input",
+        "configDir": "otp-input/.storybook",
+        "browserTarget": "otp-input:build-storybook",
+        "compodoc": false
+      },
+      "configurations": {
+        "ci": {
+          "quiet": true
+        }
+      }
+    },
+    "static-storybook": {
+      "executor": "@nx/web:file-server",
+      "dependsOn": ["build-storybook"],
+      "options": {
+        "buildTarget": "otp-input:build-storybook",
+        "staticFilePath": "dist/storybook/otp-input",
+        "spa": true
+      },
+      "configurations": {
+        "ci": {
+          "buildTarget": "otp-input:build-storybook:ci"
+        }
+      }
+    }
+  }
+}

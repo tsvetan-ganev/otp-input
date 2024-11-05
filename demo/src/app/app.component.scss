@@ -1,0 +1,95 @@
+prbl-otp-input {
+  margin-bottom: 2rem;
+
+  .separator {
+    display: inline-block;
+    font-size: 1.5rem;
+    margin: 0 0.5rem;
+  }
+
+  .separator-2 {
+    display: inline-block;
+    font-size: 1.5rem;
+    margin: 0 0.5rem;
+
+    &::before {
+      content: '';
+      display: block;
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 100%;
+      background-color: rgb(42, 42, 42);
+    }
+  }
+}
+
+prbl-otp-input.fancy prbl-otp-input-group {
+  --otp-input-cell-focus-outline-color: rgba(0, 114, 253, 0.67);
+  --otp-input-cell-focus-outline-width: 4px;
+  --otp-input-cell-width: 36px;
+  --otp-input-cell-height: 48px;
+  --otp-input-cell-border-width: 1px;
+  --otp-input-cell-border-color: black;
+  --otp-input-cell-border-radius: 4px;
+  --otp-input-cell-padding: 0.25rem;
+  --otp-input-cell-font-size: 1.5rem;
+  --otp-input-cell-font-family: Monaco;
+}
+
+prbl-otp-input.fancy-2 prbl-otp-input-group {
+  --otp-input-cell-focus-outline-color: hsla(350, 97%, 76%, 0.808);
+  --otp-input-cell-focus-outline-width: 6px;
+  --otp-input-cell-width: 48px;
+  --otp-input-cell-height: 48px;
+  --otp-input-cell-border-width: 2px;
+  --otp-input-cell-border-color: rgb(42, 223, 254);
+  --otp-input-cell-border-radius: 50%;
+  --otp-input-cell-padding: 0;
+  --otp-input-cell-font-size: 1.33rem;
+  --otp-input-cell-font-family: Monaco;
+  --otp-input-cell-color: rgb(234, 106, 2);
+}
+
+label {
+  display: inline-block;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.custom-otp-cell {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  border: 2px solid #ab25f9;
+  border-radius: 100%;
+  margin-right: 0.33rem;
+  align-items: center;
+  font-size: 1.5rem;
+  justify-content: center;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  font-weight: bold;
+
+  &.selected {
+    @keyframes pulse {
+      0% {
+        outline-width: 4px;
+      }
+      50% {
+        outline-width: 1px;
+      }
+      100% {
+        outline-width: 4px;
+      }
+    }
+    outline: solid hsla(345, 91%, 51%, 0.724);
+    outline-width: 1px;
+    animation: 1.5s pulse infinite ease-in-out;
+  }
+
+  prbl-otp-input-caret {
+    --otp-input-caret-width: 2px;
+    --otp-input-caret-color: pink;
+    --otp-input-caret-animation-duration: 0.75s;
+  }
+}

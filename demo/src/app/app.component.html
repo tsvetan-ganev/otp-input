@@ -1,0 +1,70 @@
+<prbl-otp-input [codeLength]="6">
+  <prbl-otp-input-group [cells]="3" />
+  <span class="separator" aria-hidden="true">—</span>
+  <prbl-otp-input-group [cells]="3" [cellStartIndex]="3" />
+</prbl-otp-input>
+
+<prbl-otp-input class="fancy" [codeLength]="8">
+  <prbl-otp-input-group [cells]="4" />
+  <span class="separator-2" aria-hidden="true"></span>
+  <prbl-otp-input-group [cells]="4" [cellStartIndex]="4" />
+</prbl-otp-input>
+
+<prbl-otp-input class="fancy-2" [codeLength]="6">
+  <prbl-otp-input-group [cells]="6" />
+</prbl-otp-input>
+
+<prbl-otp-input [codeLength]="9">
+  <prbl-otp-input-group [cells]="3" />
+  <ng-container [ngTemplateOutlet]="separator" />
+  <prbl-otp-input-group [cells]="3" [cellStartIndex]="3" />
+  <ng-container [ngTemplateOutlet]="separator" />
+  <prbl-otp-input-group [cells]="3" [cellStartIndex]="6" />
+
+  <ng-template #separator>
+    <span class="separator-2" aria-hidden="true"></span>
+  </ng-template>
+</prbl-otp-input>
+
+<form [formGroup]="form">
+  <label for="otp-input">Enter your one time password:</label>
+  <prbl-otp-input
+    [codeLength]="6"
+    [pattern]="OTP_INPUT_ALPHANUMERIC_REGEXP"
+    [id]="'otp-input'"
+    formControlName="otp"
+  >
+    <prbl-otp-input-group [cells]="3" [cellTemplate]="customCell" />
+    <ng-container [ngTemplateOutlet]="separator" />
+    <prbl-otp-input-group
+      [cells]="3"
+      [cellStartIndex]="3"
+      [cellTemplate]="customCell"
+    />
+
+    <ng-template #separator>
+      <span class="separator-2" aria-hidden="true"></span>
+    </ng-template>
+
+    <ng-template
+      #customCell
+      let-index="index"
+      let-isSelected="isSelected"
+      let-symbol="symbol"
+    >
+      <div class="custom-otp-cell" [class.selected]="isSelected">
+        @if (symbol) {
+          {{ symbol }}
+        } @else {
+          @if (isSelected) {
+            <prbl-otp-input-caret />
+          }
+        }
+      </div>
+    </ng-template>
+  </prbl-otp-input>
+
+  <code>
+    <pre>{{ form.value | json }}</pre>
+  </code>
+</form>

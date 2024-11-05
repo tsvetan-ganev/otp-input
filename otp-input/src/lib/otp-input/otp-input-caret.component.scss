@@ -1,0 +1,26 @@
+:host {
+  --otp-input-caret-width: 1px;
+  --otp-input-caret-height: 1.25rem;
+  --otp-input-caret-color: rgba(0, 0, 0, 1);
+  --otp-input-caret-animation-duration: 1.2s;
+
+  display: block;
+  width: var(--otp-input-caret-width);
+  height: var(--otp-input-caret-height);
+  background-color: var(--otp-input-caret-color);
+  animation-duration: var(--otp-input-caret-animation-duration);
+  animation: caret-blink infinite var(--otp-input-caret-animation-duration);
+
+  @keyframes caret-blink {
+    0%,
+    75%,
+    100% {
+      opacity: 1;
+    }
+
+    25%,
+    50% {
+      opacity: 0;
+    }
+  }
+}

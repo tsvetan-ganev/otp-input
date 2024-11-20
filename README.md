@@ -4,6 +4,8 @@
 
 Angular component for entering one time passwords built with modern Angular features (signals, zoneless change detection, new control flow syntax).
 
+[Storybook Demo](https://ng-otp-input.vercel.app/)
+
 ## Features
 
 - accessibility out of the box

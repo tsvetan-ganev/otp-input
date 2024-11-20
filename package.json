@@ -5,6 +5,7 @@
     "ng": "nx",
     "start": "nx storybook otp-input",
     "build": "nx build otp-input",
+    "build:storybook": "nx build-storybook otp-input",
     "watch": "nx build otp-input --watch --configuration development",
     "lint": "nx lint otp-input",
     "test": "nx test otp-input --watch --code-coverage",

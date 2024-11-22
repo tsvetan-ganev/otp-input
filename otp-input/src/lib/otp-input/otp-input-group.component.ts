@@ -64,7 +64,7 @@ export class OtpInputGroupComponent {
   public readonly otpInputState = inject(OtpInputState);
 
   /**
-   * How many symbol cells should be rendered.
+   * How many character cells should be rendered.
    */
   public readonly cells = input.required<number>();
 

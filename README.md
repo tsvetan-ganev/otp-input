@@ -13,7 +13,7 @@ Angular component for entering one time passwords built with modern Angular feat
 - high performance (`ChangeDetectionStrategy.OnPush` + signals)
 - customizability
 - handles paste event
-- support for the Angular Forms API (implements `ControlValueAccessor`)
+- support for the Forms API (implements `ControlValueAccessor`)
 - core functionality is covered by unit tests
 
 ## Installation
@@ -22,21 +22,9 @@ Angular component for entering one time passwords built with modern Angular feat
 npm i @parabolabs/otp-input
 ```
 
-## Built-in behavior
-
-- The first empty cell is focused or if all values are filled - the last cell.
-- Focus moves to the next empty cell after a value was entered.
-- When focus is on the last cell, pressing a key will update its value.
-- When focus is on a cell with value, pressing delete will delete the value and keep focus in the cell.
-- By default only digits are allowed to be entered. Can be changed via the `pattern` input (see examples).
-- You can use the arrow keys to move backwards and forwards inside the cells - however, the rightmost allowed cell is always the first empty one.
-- You can delete a filled cell's value at any position (using the arrow keys).
-- Pasting replaces everything that's already been entered by the user.
-- Pasting only works if all the characters in the pasted text are validated by the `pattern` regular expression.
-
 ## How to use
 
-The following diagram demonstrates the expected structure of the component:
+The following diagram displays the logical structure of the component:
 
 ```mermaid
 flowchart TD
@@ -54,7 +42,7 @@ flowchart TD
     BN --> E3[cell]
 ```
 
-The component allows customizations via CSS custom properties and custom `ng-template`s for its cells.
+Customizations are possible via CSS custom properties and custom `ng-template`s the cells.
 
 You can provide any of the following to change the default styling (if not using a custom template):
 
@@ -104,7 +92,6 @@ import {
 ```
 
 ```html
-<!-- template -->
 <prbl-otp-input [codeLength]="6" [formControl]="otpFormControl">
   <prbl-otp-input-group [cells]="6" />
 </prbl-otp-input>
@@ -113,7 +100,6 @@ import {
 ### Multiple Input Groups
 
 ```html
-<!-- template -->
 <prbl-otp-input [codeLength]="8" [formControl]="otpFormControl">
   <prbl-otp-input-group [cells]="4" />
   <span class="separator" aria-hidden="true"></span>
@@ -125,9 +111,11 @@ import {
 
 You can use one of the patterns provided by the library (`OTP_INPUT_DIGIT_REGEXP` - default and `OTP_INPUT_ALPHANUMERIC_REGEXP`) or provide your own.
 
+> [!TIP]
+> By default on mobile devices the keyboard will only display digits. If you provide your own regex, make sure to also set the `inputMode` to `'text'`.
+
 ```html
-<!-- template -->
-<prbl-otp-input [codeLength]="8" [pattern]="my_custom_regex">
+<prbl-otp-input [codeLength]="8" [pattern]="my_custom_regex" [inputMode]="'text'">
   <prbl-otp-input-group [cells]="4" />
   <span class="separator" aria-hidden="true"></span>
   <prbl-otp-input-group [cells]="4" [cellStartIndex]="4" />
@@ -167,7 +155,6 @@ import {
 ```
 
 ```html
-<!-- template -->
 <prbl-otp-input [codeLength]="6" [formControl]="otpFormControl">
   <prbl-otp-input-group [cells]="3" [cellTemplate]="customCell" />
   <ng-container [ngTemplateOutlet]="separator" />
@@ -200,21 +187,38 @@ export interface OtpInputTemplateRefContext {
 }
 ```
 
+## Built-in behavior
+
+- The first empty cell is focused or if all values are filled - the last cell.
+- Focus moves to the next empty cell after a value was entered.
+- When focus is on the last cell, pressing a key will update its value.
+- When focus is on a cell with value, pressing delete will delete the value and keep focus in the cell.
+- By default only digits are allowed to be entered. Can be changed via the `pattern` input (see examples).
+- You can use the arrow keys to move backwards and forwards inside the cells - however, the rightmost allowed cell is always the first empty one.
+- You can delete/replace a filled cell's value at any position (using the arrow keys).
+- Pasting replaces everything that's already been entered by the user.
+- Pasting only triggers if all the characters in the pasted text pass the `pattern` validation.
+- Entering characters in arbitrary order (e.g. fill them from right to left) is intentionally not supported.
+- `FormControl` value is either the full code or an empty string.
+
 ## Component API
 
 ### `prbl-otp-input`
 
-| Input        | Type      | Required | Description                                            |
-|--------------|-----------|:--------:|--------------------------------------------------------|
-| `codeLength` | `number`  | ✔️        | The length of the OTP code                             |
-| `pattern`    | `RegExp`  | ✖️        | Regular expression which validates each entered symbol |
-| `label`      | `string`  | ✖️        | `aria-label` for the input                             |
-| `id`         | `string`  | ✖️        | `id` for the input                                     |
-| `disabled`   | `boolean` | ✖️        | Whether the input is disabled                          |
+| Input         | Type             | Required | Default               | Description                                                   |
+|---------------|------------------|:--------:|----------------------:|---------------------------------------------------------------|
+| `codeLength`  | `number`         | ✔️        |                       | The length of the OTP code                                    |
+| `pattern`     | `RegExp`         | ✖️        | `/^[0-9]$/`           | Regex which validates each entered symbol                     |
+| `label`       | `string`         | ✖️        | `undefined`           | `aria-label` for the input                                    |
+| `id`          | `string`         | ✖️        | `crypto.randomUUID()` | `id` for the input                                            |
+| `inputMode`   | `string`         | ✖️        | `numeric`             | Sets the `inputMode` for the underlying `input` element       |
+| `disabled`    | `boolean`        | ✖️        | `false`               | Whether the input is disabled                                 |
+| `codeEntered` | `output<string>` | ✖️        |                       | Called when the user fills in all the characters of the code  |
 
 ### `prbl-otp-input-group`
 
-| Input            | Type          | Required | Description                                                   |
-|------------------|---------------|:--------:|---------------------------------------------------------------|
-| `cellStartIndex` | `number`      | ✖️        | The starting index for the first cell in the group.           |
-| `cellTemplate`   | `TemplateRef` | ✖️        | `<ng-template>` instance which will be rendered for each cell |
+| Input            | Type          | Required | Default     | Description                                         |
+|------------------|---------------|:--------:|------------:|-----------------------------------------------------|
+| `cells`          | `number`      | ️️️️️✔️        |             | How many character cells should be rendered.        |
+| `cellStartIndex` | `number`      | ✖️        | `0`         | The starting index for the first cell in the group. |
+| `cellTemplate`   | `TemplateRef` | ✖️        | `undefined` | `` instance which will be rendered for each cell    |

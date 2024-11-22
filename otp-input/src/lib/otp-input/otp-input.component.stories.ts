@@ -63,18 +63,6 @@ prbl-otp-input {
       margin: 0 0.5rem;
   }
 }
-
-@keyframes pulse {
-  0% {
-    outline-width: 4px;
-  }
-  50% {
-    outline-width: 1px;
-  }
-  100% {
-    outline-width: 4px;
-  }
-}
 `;
 
 export const DefaultStyling: Story = {
@@ -190,12 +178,12 @@ export const ThreeGroups: Story = {
         disabled: args.disabled,
       },
       template: `
-        <prbl-otp-input [codeLength]="9" [disabled]="disabled">
-          <prbl-otp-input-group [cells]="3" />
+        <prbl-otp-input [codeLength]="6" [disabled]="disabled">
+          <prbl-otp-input-group [cells]="2" />
           <ng-container [ngTemplateOutlet]="separator" />
-          <prbl-otp-input-group [cells]="3" [cellStartIndex]="3" />
+          <prbl-otp-input-group [cells]="2" [cellStartIndex]="2" />
           <ng-container [ngTemplateOutlet]="separator" />
-          <prbl-otp-input-group [cells]="3" [cellStartIndex]="6" />
+          <prbl-otp-input-group [cells]="2" [cellStartIndex]="4" />
 
           <ng-template #separator>
             <span class="separator-2" aria-hidden="true"></span>
@@ -249,6 +237,18 @@ export const CustomCellTemplate: Story = {
             --otp-input-caret-height: 1.66rem;
           }
         }
+
+        @keyframes pulse {
+          0% {
+            outline-width: 4px;
+          }
+          50% {
+            outline-width: 1px;
+          }
+          100% {
+            outline-width: 4px;
+          }
+        }
         `,
       ],
       props: {
@@ -259,6 +259,7 @@ export const CustomCellTemplate: Story = {
         <prbl-otp-input
           [codeLength]="6"
           [pattern]="OTP_INPUT_ALPHANUMERIC_REGEXP"
+          [inputMode]="'text'"
           [id]="'otp-input'"
           [disabled]="disabled"
         >

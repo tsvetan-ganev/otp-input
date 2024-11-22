@@ -7,6 +7,7 @@ import {
   inject,
   input,
   OnInit,
+  output,
   Signal,
   viewChild,
 } from '@angular/core';
@@ -30,16 +31,17 @@ import { OtpInputState } from './otp-input-state.service';
     <div class="input-wrapper">
       <input
         #textInput
-        (focus)="onInputFocus()"
         (input)="onInput($any($event))"
         (paste)="onPaste($event)"
         (keydown.arrowleft)="onLeft()"
         (keydown.arrowright)="onRight()"
         (keydown.backspace)="onDelete($event)"
+        (focus)="onInputFocus()"
         (blur)="onBlur()"
         [attr.id]="id()"
         [attr.aria-label]="label()"
         [disabled]="isDisabled()"
+        [inputMode]="inputMode()"
         type="one-time-code"
         autocomplete="one-time-code"
         autocorrect="off"
@@ -98,14 +100,27 @@ export class OtpInputComponent implements OnInit, ControlValueAccessor {
   private readonly ngControl = inject(NgControl, { optional: true });
 
   /**
-   * The length of the OTP code
+   * The length of the OTP code.
    */
   public readonly codeLength = input.required<number>();
 
   /**
-   * Regular expression which validates each entered symbol
+   * Regular expression which validates each entered character.
+   * By default only digits can be entered.
+   *
+   * If you allow other characters, you should also change the {@link inputMode}.
    */
   public readonly pattern = input<RegExp>(OTP_INPUT_DIGIT_REGEXP);
+
+  /**
+   * Sets the `inputMode` for the underlying `input` element.
+   * You can read more in [MDN's inputMode article](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/inputMode).
+   *
+   * Use this in combination with {@link pattern}.
+   *
+   * @default 'numeric'
+   */
+  public readonly inputMode = input<string>('numeric');
 
   /**
    * `aria-label` for the input
@@ -113,14 +128,21 @@ export class OtpInputComponent implements OnInit, ControlValueAccessor {
   public readonly label = input<string>();
 
   /**
-   * `id` for the input
+   * `id` for the input.
    */
   public readonly id = input<string>(crypto.randomUUID());
 
   /**
-   * Whether the input is disabled
+   * Whether the input is disabled.
+   *
+   * Note: you should only use this if `[formControl]` is not attached.
    */
   public readonly disabled = input<boolean>();
+
+  /**
+   * Emits when all the required characters of the code were filled in.
+   */
+  public readonly codeEntered = output<string>();
 
   protected isDisabled = computed(() => this.otpInputService.isDisabled());
 
@@ -141,14 +163,11 @@ export class OtpInputComponent implements OnInit, ControlValueAccessor {
     }
 
     effect(() => {
-      if (typeof this.disabled() !== 'undefined') {
-        if (!this.ngControl) {
-          this.otpInputService.toggleDisabled(Boolean(this.disabled()));
-        } else {
-          throw Error(
-            '[formControl] or [formControlName] are detected - use the `disable()` method on the form control instance to toggle the disabled state!',
-          );
-        }
+      // if `[formControl] or `[formControlName]` are attached,
+      // use `formControl.disable()` method as source of truth,
+      // otherwise use the `disabled` input signal
+      if (!this.ngControl && typeof this.disabled() !== 'undefined') {
+        this.otpInputService.toggleDisabled(Boolean(this.disabled()));
       }
     });
   }
@@ -166,7 +185,7 @@ export class OtpInputComponent implements OnInit, ControlValueAccessor {
     ) {
       nativeTextInput.value = code;
       this.otpInputService.filledCharacters.set(code.split(''));
-    } else if (code === '' || code === null) {
+    } else if (!code) {
       nativeTextInput.value = '';
     }
   }
@@ -191,9 +210,9 @@ export class OtpInputComponent implements OnInit, ControlValueAccessor {
     const inputEvent = $event as unknown as InputEvent;
     const inputEl = $event.target as HTMLInputElement;
 
-    // validates if the symbol matches the provided pattern
-    const symbol = inputEvent.data;
-    if (!symbol || !this.pattern().test(symbol)) {
+    // validates if the character matches the provided pattern
+    const char = inputEvent.data;
+    if (!char || !this.pattern().test(char)) {
       inputEl.value = this.otpInputService.filledCharactersAsString();
       return;
     }
@@ -212,11 +231,13 @@ export class OtpInputComponent implements OnInit, ControlValueAccessor {
       this.otpInputService.pushCharacter(inputEvent.data);
     }
 
-    inputEl.value = this.otpInputService.filledCharactersAsString();
+    const newValue = this.otpInputService.filledCharactersAsString();
+    inputEl.value = newValue;
 
     // emit ControlValueAccessor changes
-    if (inputEl.value.length === this.codeLength()) {
-      this.onChange(inputEl.value);
+    if (newValue.length === this.codeLength()) {
+      this.onChange(newValue);
+      this.codeEntered.emit(newValue);
     } else {
       this.onChange('');
     }
@@ -255,13 +276,12 @@ export class OtpInputComponent implements OnInit, ControlValueAccessor {
   /**
    * Handle pasting the OTP code.
    * The method sanitizes the clipboard text by removing all dashes and whitespaces
-   * and by cutting all symbols exceeding the {@link codeLength}.
+   * and by cutting all characters exceeding the {@link codeLength}.
    *
-   * Pasting overrides **all** symbols already entered by the user.
+   * Pasting overrides **all** characters already entered by the user.
    */
   protected onPaste($event: ClipboardEvent) {
     const input = $event.target as unknown as HTMLInputElement;
-    const previousValue = input.value;
     const text = $event.clipboardData?.getData('text');
     $event.preventDefault();
 
@@ -273,10 +293,8 @@ export class OtpInputComponent implements OnInit, ControlValueAccessor {
       .replace(/[-\s]/g, '')
       .substring(0, this.codeLength());
 
-    // skip pasted text containing symbols that do not match the pattern
-    if (
-      sanitizedCode.split('').some((symbol) => !symbol.match(this.pattern()))
-    ) {
+    // skip pasted text containing characters that do not match the pattern
+    if (sanitizedCode.split('').some((char) => !char.match(this.pattern()))) {
       return;
     }
 
@@ -286,9 +304,12 @@ export class OtpInputComponent implements OnInit, ControlValueAccessor {
     }
     input.value = this.otpInputService.filledCharactersAsString();
 
-    // emit ControlValueAccessor change
-    if (input.value !== previousValue) {
+    // all characters are filled in
+    if (input.value.length === this.codeLength()) {
+      // emit ControlValueAccessor change
       this.onChange(input.value);
+
+      this.codeEntered.emit(input.value);
     }
   }
 
@@ -336,6 +357,6 @@ export class OtpInputComponent implements OnInit, ControlValueAccessor {
   }
 }
 
-export const OTP_INPUT_DIGIT_REGEXP = /^\d$/;
+export const OTP_INPUT_DIGIT_REGEXP = /^[0-9]$/;
 
-export const OTP_INPUT_ALPHANUMERIC_REGEXP = /^[a-zA-Z\d]$/;
+export const OTP_INPUT_ALPHANUMERIC_REGEXP = /^[a-zA-Z0-9]$/;

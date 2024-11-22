@@ -1,25 +1,25 @@
 import {
-  render,
-  RenderComponentOptions,
   findByText,
   fireEvent,
+  render,
+  RenderComponentOptions,
 } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import {
-  OTP_INPUT_ALPHANUMERIC_REGEXP,
-  OtpInputComponent,
-} from './otp-input.component';
-import {
   DebugElement,
   provideExperimentalZonelessChangeDetection,
 } from '@angular/core';
-import { OtpInputState } from './otp-input-state.service';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { By } from '@angular/platform-browser';
 import { OtpInputCaretComponent } from './otp-input-caret.component';
 import { OtpInputCellComponent } from './otp-input-cell.component';
 import { OtpInputGroupComponent } from './otp-input-group.component';
-import { By } from '@angular/platform-browser';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { OtpInputState } from './otp-input-state.service';
+import {
+  OTP_INPUT_ALPHANUMERIC_REGEXP,
+  OtpInputComponent,
+} from './otp-input.component';
 
 enum KbdKeys {
   Left = '[ArrowLeft]',
@@ -57,11 +57,18 @@ describe(OtpInputComponent.name, () => {
     );
 
     const textInput = debugElement.query(By.css('input[type="one-time-code"]'));
-    expect(textInput.attributes['aria-label']).toEqual(label);
-    expect(textInput.attributes['id']).toEqual(id);
-    expect(textInput.attributes['autocomplete']).toEqual('one-time-code');
-    expect(textInput.attributes['autocorrect']).toEqual('off');
-    expect(textInput.attributes['spellcheck']).toEqual('false');
+    const expectedAttributesMap = {
+      'aria-label': label,
+      id: id,
+      autocomplete: 'one-time-code',
+      type: 'one-time-code',
+      autocorrect: 'off',
+      spellcheck: 'false',
+      inputmode: 'numeric',
+    };
+    Object.entries(expectedAttributesMap).forEach(([key, value]) => {
+      expect(textInput.attributes[key]).withContext(key).toEqual(value);
+    });
   });
 
   it('should disable the input', async () => {
@@ -150,6 +157,59 @@ describe(OtpInputComponent.name, () => {
     }
   });
 
+  it('should replace the last char when user enters a value in an already filled code', async () => {
+    const codeLength = 6;
+    const { debugElement } = await render(
+      `
+        <prbl-otp-input [codeLength]="${codeLength}">
+          <prbl-otp-input-group [cells]="${codeLength}" />
+        </prbl-otp-input>
+      `,
+      renderOptions,
+    );
+
+    const textInput = getTextInputEl(debugElement);
+
+    const code = '123456';
+    const newDigit = '7';
+    const newCode = code.replace('6', newDigit);
+    await userEvent.click(textInput);
+    await userEvent.type(textInput, code);
+    await userEvent.type(textInput, newDigit);
+
+    for (const digit of newCode) {
+      const cell = await findByText(debugElement.nativeElement, digit, {
+        selector: 'prbl-otp-input-cell',
+      });
+      expect(cell).toBeTruthy();
+    }
+  });
+
+  it('should emit event when all the characters are filled', async () => {
+    const onCodeEnteredCb = jasmine.createSpy();
+    const codeLength = 6;
+    const { debugElement } = await render(
+      `
+      <prbl-otp-input [codeLength]="${codeLength}" (codeEntered)="codeEntered($event)">
+        <prbl-otp-input-group [cells]="${codeLength}" />
+      </prbl-otp-input>`,
+      {
+        ...renderOptions,
+        componentProperties: {
+          codeEntered: onCodeEnteredCb,
+        },
+      },
+    );
+
+    const textInput = getTextInputEl(debugElement);
+
+    const expectedOtpCode = '123456';
+    await userEvent.click(textInput);
+    await userEvent.type(textInput, expectedOtpCode);
+
+    expect(onCodeEnteredCb).toHaveBeenCalledOnceWith(expectedOtpCode);
+  });
+
   it('should focus the correct cell at each digit filled', async () => {
     const codeLength = 3;
     const { debugElement } = await render(
@@ -183,7 +243,7 @@ describe(OtpInputComponent.name, () => {
       .toHaveClass('selected');
   });
 
-  it('should not allow entering symbols that do not match the default pattern (numbers only)', async () => {
+  it('should not allow entering characters that do not match the default pattern (numbers only)', async () => {
     const codeLength = 3;
     const { debugElement } = await render(
       `
@@ -205,7 +265,7 @@ describe(OtpInputComponent.name, () => {
     expect(textInput.value).toEqual('9');
   });
 
-  it('should not allow entering symbols that do not match the provided pattern', async () => {
+  it('should not allow entering characters that do not match the provided pattern', async () => {
     const codeLength = 3;
     const { debugElement } = await render(
       `
@@ -454,7 +514,7 @@ describe(OtpInputComponent.name, () => {
       .toEqual('987654321');
   });
 
-  it('should trim excessive symbols on paste', async () => {
+  it('should trim excessive characters on paste', async () => {
     const codeLength = 6;
     const { debugElement } = await render(
       `
@@ -474,11 +534,11 @@ describe(OtpInputComponent.name, () => {
     await userEvent.click(textInput);
     await userEvent.paste(dt);
     expect(textInput.value)
-      .withContext('should trim the last 3 symbols')
+      .withContext('should trim the last 3 characters')
       .toEqual('123456');
   });
 
-  it('should ignore paste of content containing invalid symbols', async () => {
+  it('should ignore paste of content containing invalid characters', async () => {
     const codeLength = 6;
     const { debugElement } = await render(
       `
@@ -616,7 +676,7 @@ describe(OtpInputComponent.name, () => {
       await userEvent.type(textInput, KbdKeys.Backspace);
       expect(fc.value)
         .withContext(
-          'deleting a symbol should result in empty form control value',
+          'deleting a character should result in empty form control value',
         )
         .toEqual('');
 
@@ -631,5 +691,43 @@ describe(OtpInputComponent.name, () => {
     });
   });
 
-  // TODO: test deleting a symbol in the middle
+  describe('Custom Cell Template', async () => {
+    async function renderCustomCellTemplate() {
+      const codeLength = 6;
+      const { debugElement } = await render(
+        `
+        <prbl-otp-input [codeLength]="${codeLength}">
+          <prbl-otp-input-group [cells]="${codeLength}/2" [cellTemplate]="customCell" />
+          <prbl-otp-input-group [cells]="${codeLength}/2" [cellStartIndex]="${codeLength}/2" [cellTemplate]="customCell" />
+
+          <ng-template #customCell let-index="index" let-isSelected="isSelected" let-symbol="symbol">
+            <div class="custom-otp-cell" [class.selected]="isSelected" aria-hidden="true">
+              <ng-container *ngIf="symbol">{{ symbol }}</ng-container>
+            </div>
+          </ng-template>
+        </prbl-otp-input>
+      `,
+        renderOptions,
+      );
+
+      return debugElement;
+    }
+
+    it('should fill OTP code with custom cell template', async () => {
+      const debugElement = await renderCustomCellTemplate();
+      const textInput = getTextInputEl(debugElement);
+
+      const expectedOtpCode = '123456';
+      await userEvent.click(textInput);
+      await userEvent.type(textInput, expectedOtpCode);
+      expect(textInput.value).toEqual(expectedOtpCode);
+
+      for (const digit of expectedOtpCode) {
+        const cell = await findByText(debugElement.nativeElement, digit, {
+          selector: '.custom-otp-cell',
+        });
+        expect(cell).toBeTruthy();
+      }
+    });
+  });
 });

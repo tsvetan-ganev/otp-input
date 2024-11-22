@@ -36,7 +36,6 @@ import { OtpInputCaretComponent } from './otp-input-caret.component';
       border-width: var(--otp-input-cell-border-width);
       border-color: var(--otp-input-cell-border-color);
       border-style: solid;
-      border-right: none;
       padding: var(--otp-input-cell-padding);
       font-family: var(--otp-input-cell-font-family);
       font-size: var(--otp-input-cell-font-size);
@@ -44,9 +43,14 @@ import { OtpInputCaretComponent } from './otp-input-caret.component';
       background: var(--otp-input-cell-background);
 
       &.selected {
+        z-index: 1;
         outline-width: var(--otp-input-cell-focus-outline-width);
         outline-style: solid;
         outline-color: var(--otp-input-cell-focus-outline-color);
+      }
+
+      &:not(:first-of-type) {
+        margin-left: calc(var(--otp-input-cell-border-width) * -1);
       }
 
       &:first-of-type {

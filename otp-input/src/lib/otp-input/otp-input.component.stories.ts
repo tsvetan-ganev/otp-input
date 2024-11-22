@@ -109,7 +109,7 @@ export const CustomStyling: Story = {
           --otp-input-cell-height: 48px;
           --otp-input-cell-border-width: 1px;
           --otp-input-cell-border-color: black;
-          --otp-input-cell-border-radius: 4px;
+          --otp-input-cell-outer-border-radius: 4px;
           --otp-input-cell-padding: 0.25rem;
           --otp-input-cell-font-size: 1.5rem;
           --otp-input-cell-font-family: Monaco;
@@ -148,7 +148,7 @@ export const CustomStyling2: Story = {
           --otp-input-cell-height: 48px;
           --otp-input-cell-border-width: 2px;
           --otp-input-cell-border-color: rgb(42, 223, 254);
-          --otp-input-cell-border-radius: 50%;
+          --otp-input-cell-outer-border-radius: 50%;
           --otp-input-cell-padding: 0;
           --otp-input-cell-font-size: 1.33rem;
           --otp-input-cell-font-family: Monaco;
@@ -158,6 +158,39 @@ export const CustomStyling2: Story = {
       ],
       template: `
       <prbl-otp-input class="fancy-2" [codeLength]="6" [disabled]="disabled">
+        <prbl-otp-input-group [cells]="6" />
+      </prbl-otp-input>
+      `,
+    };
+  },
+};
+
+export const GapBetweenCells: Story = {
+  decorators: [
+    moduleMetadata({
+      imports: ngImports,
+    }),
+  ],
+  render: (args) => {
+    return {
+      props: {
+        disabled: args.disabled,
+      },
+      styles: [
+        defaultStyles,
+        `
+        prbl-otp-input prbl-otp-input-group {
+          --br: 12px;
+          --otp-input-cell-border-width: 2px;
+          --otp-input-cell-outer-border-radius: var(--br);
+          --otp-input-cell-inner-border-radius: var(--br);
+          --otp-input-cell-padding: 0;
+          --otp-input-group-gap: 8px;
+        }
+        `,
+      ],
+      template: `
+      <prbl-otp-input [codeLength]="6" [disabled]="disabled">
         <prbl-otp-input-group [cells]="6" />
       </prbl-otp-input>
       `,
@@ -214,7 +247,7 @@ export const CustomCellTemplate: Story = {
           align-items: center;
           font-size: 1.5rem;
           justify-content: center;
-          font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+          font-family: monospace;
           font-weight: bold;
           color: #fa5a76;
           text-transform: uppercase;

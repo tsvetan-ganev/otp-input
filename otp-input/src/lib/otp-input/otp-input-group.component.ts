@@ -44,7 +44,9 @@ import { OtpInputState } from './otp-input-state.service';
       display: flex;
       flex-direction: row;
       pointer-events: none;
+      gap: var(--otp-input-group-gap);
 
+      --otp-input-group-gap: 0px;
       --otp-input-cell-font-family: ui-monospace, monospace;
       --otp-input-cell-font-size: 1rem;
       --otp-input-cell-color: black;
@@ -52,9 +54,10 @@ import { OtpInputState } from './otp-input-state.service';
       --otp-input-cell-height: var(--otp-input-cell-width);
       --otp-input-cell-border-width: 1px;
       --otp-input-cell-border-color: black;
-      --otp-input-cell-border-radius: 8px;
+      --otp-input-cell-outer-border-radius: 8px;
+      --otp-input-cell-inner-border-radius: 0px;
       --otp-input-cell-padding: 0.25rem;
-      --otp-input-cell-focus-outline-color: black;
+      --otp-input-cell-focus-outline-color: -webkit-focus-ring-color;
       --otp-input-cell-focus-outline-width: 2px;
       --otp-input-cell-background: none;
     }

@@ -47,6 +47,9 @@ Customizations are possible via CSS custom properties and custom `ng-template`s 
 You can provide any of the following to change the default styling (if not using a custom template):
 
 ```text
+// group
+--otp-input-group-gap
+
 // cell
 --otp-input-cell-font-family
 --otp-input-cell-font-size
@@ -55,13 +58,14 @@ You can provide any of the following to change the default styling (if not using
 --otp-input-cell-height
 --otp-input-cell-border-width
 --otp-input-cell-border-color
---otp-input-cell-border-radius
+--otp-input-cell-outer-border-radius
+--otp-input-cell-inner-border-radius
 --otp-input-cell-padding
 --otp-input-cell-focus-outline-color
 --otp-input-cell-focus-outline-width
 --otp-input-cell-background
 
-// carret
+// caret
 --otp-input-caret-width
 --otp-input-caret-height
 --otp-input-caret-color

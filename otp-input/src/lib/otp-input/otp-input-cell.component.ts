@@ -35,6 +35,7 @@ import { OtpInputCaretComponent } from './otp-input-caret.component';
       height: var(--otp-input-cell-height);
       border-width: var(--otp-input-cell-border-width);
       border-color: var(--otp-input-cell-border-color);
+      border-radius: var(--otp-input-cell-inner-border-radius);
       border-style: solid;
       padding: var(--otp-input-cell-padding);
       font-family: var(--otp-input-cell-font-family);
@@ -50,19 +51,19 @@ import { OtpInputCaretComponent } from './otp-input-caret.component';
       }
 
       &:not(:first-of-type) {
-        margin-left: calc(var(--otp-input-cell-border-width) * -1);
+        margin-left: calc((var(--otp-input-cell-border-width) * -1));
       }
 
       &:first-of-type {
-        border-top-left-radius: var(--otp-input-cell-border-radius);
-        border-bottom-left-radius: var(--otp-input-cell-border-radius);
+        border-top-left-radius: var(--otp-input-cell-outer-border-radius);
+        border-bottom-left-radius: var(--otp-input-cell-outer-border-radius);
       }
 
       &:last-of-type {
         border-right: var(--otp-input-cell-border-width) solid
           var(--otp-input-cell-border-color);
-        border-top-right-radius: var(--otp-input-cell-border-radius);
-        border-bottom-right-radius: var(--otp-input-cell-border-radius);
+        border-top-right-radius: var(--otp-input-cell-outer-border-radius);
+        border-bottom-right-radius: var(--otp-input-cell-outer-border-radius);
       }
     }
   `,

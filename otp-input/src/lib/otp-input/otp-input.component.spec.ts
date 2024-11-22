@@ -579,7 +579,7 @@ describe(OtpInputComponent.name, () => {
     expect(debugElement.queryAll(By.css('.selected'))).toHaveSize(0);
   });
 
-  describe('ControlValueAccessor', async () => {
+  describe('ControlValueAccessor', () => {
     it('should initialize with a value', async () => {
       const codeLength = 6;
       const initialValue = '123456';
@@ -691,7 +691,7 @@ describe(OtpInputComponent.name, () => {
     });
   });
 
-  describe('Custom Cell Template', async () => {
+  describe('Custom Cell Template', () => {
     async function renderCustomCellTemplate() {
       const codeLength = 6;
       const { debugElement } = await render(
